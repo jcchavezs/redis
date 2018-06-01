@@ -629,7 +629,7 @@ type ClusterClient struct {
 	state         *clusterStateHolder
 	cmdsInfoCache *cmdsInfoCache
 
-	process           func(Cmder) error
+	process           func(context.Context, Cmder) error
 	processPipeline   func([]Cmder) error
 	processTxPipeline func([]Cmder) error
 }
@@ -854,16 +854,16 @@ func (c *ClusterClient) Close() error {
 }
 
 func (c *ClusterClient) WrapProcess(
-	fn func(oldProcess func(Cmder) error) func(Cmder) error,
+	fn func(oldProcess func(context.Context, Cmder) error) func(context.Context, Cmder) error,
 ) {
 	c.process = fn(c.process)
 }
 
 func (c *ClusterClient) Process(cmd Cmder) error {
-	return c.process(cmd)
+	return c.process(context.Background(), cmd)
 }
 
-func (c *ClusterClient) defaultProcess(cmd Cmder) error {
+func (c *ClusterClient) defaultProcess(ctx context.Context, cmd Cmder) error {
 	var node *clusterNode
 	var ask bool
 	for attempt := 0; attempt <= c.opt.MaxRedirects; attempt++ {

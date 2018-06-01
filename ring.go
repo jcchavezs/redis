@@ -466,7 +466,7 @@ func (c *Ring) cmdShard(cmd Cmder) (*ringShard, error) {
 	return c.shards.GetByKey(firstKey)
 }
 
-func (c *Ring) WrapProcess(fn func(oldProcess func(cmd Cmder) error) func(cmd Cmder) error) {
+func (c *Ring) WrapProcess(fn func(oldProcess func(ctx context.Context, cmd Cmder) error) func(ctx context.Context, cmd Cmder) error) {
 	c.ForEachShard(func(c *Client) error {
 		c.WrapProcess(fn)
 		return nil

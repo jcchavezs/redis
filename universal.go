@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"context"
 	"crypto/tls"
 	"time"
 )
@@ -126,7 +127,7 @@ type UniversalClient interface {
 	Cmdable
 	Watch(fn func(*Tx) error, keys ...string) error
 	Process(cmd Cmder) error
-	WrapProcess(fn func(oldProcess func(cmd Cmder) error) func(cmd Cmder) error)
+	WrapProcess(fn func(oldProcess func(ctx context.Context, cmd Cmder) error) func(ctx context.Context, cmd Cmder) error)
 	Subscribe(channels ...string) *PubSub
 	PSubscribe(channels ...string) *PubSub
 	Close() error

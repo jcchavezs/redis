@@ -1,6 +1,7 @@
 package redis_test
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-redis/redis"
@@ -10,10 +11,10 @@ func Example_instrumentation() {
 	cl := redis.NewClient(&redis.Options{
 		Addr: ":6379",
 	})
-	cl.WrapProcess(func(old func(cmd redis.Cmder) error) func(cmd redis.Cmder) error {
-		return func(cmd redis.Cmder) error {
+	cl.WrapProcess(func(old func(ctx context.Context, cmd redis.Cmder) error) func(ctx context.Context, cmd redis.Cmder) error {
+		return func(ctx context.Context, cmd redis.Cmder) error {
 			fmt.Printf("starting processing: <%s>\n", cmd)
-			err := old(cmd)
+			err := old(ctx, cmd)
 			fmt.Printf("finished processing: <%s>\n", cmd)
 			return err
 		}

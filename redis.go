@@ -27,7 +27,7 @@ type baseClient struct {
 	opt      *Options
 	connPool pool.Pooler
 
-	process           func(Cmder) error
+	process           func(context.Context, Cmder) error
 	processPipeline   func([]Cmder) error
 	processTxPipeline func([]Cmder) error
 
@@ -124,15 +124,15 @@ func (c *baseClient) initConn(cn *pool.Conn) error {
 }
 
 // WrapProcess wraps function that processes Redis commands.
-func (c *baseClient) WrapProcess(fn func(oldProcess func(cmd Cmder) error) func(cmd Cmder) error) {
+func (c *baseClient) WrapProcess(fn func(oldProcess func(ctx context.Context, cmd Cmder) error) func(ctx context.Context, cmd Cmder) error) {
 	c.process = fn(c.process)
 }
 
 func (c *baseClient) Process(cmd Cmder) error {
-	return c.process(cmd)
+	return c.process(context.Background(), cmd)
 }
 
-func (c *baseClient) defaultProcess(cmd Cmder) error {
+func (c *baseClient) defaultProcess(ctx context.Context, cmd Cmder) error {
 	for attempt := 0; attempt <= c.opt.MaxRetries; attempt++ {
 		if attempt > 0 {
 			time.Sleep(c.retryBackoff(attempt))

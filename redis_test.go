@@ -2,6 +2,7 @@ package redis_test
 
 import (
 	"bytes"
+	"context"
 	"net"
 	"time"
 
@@ -228,8 +229,8 @@ var _ = Describe("Client", func() {
 	It("should call WrapProcess", func() {
 		var fnCalled bool
 
-		client.WrapProcess(func(old func(redis.Cmder) error) func(redis.Cmder) error {
-			return func(cmd redis.Cmder) error {
+		client.WrapProcess(func(old func(context.Context, redis.Cmder) error) func(context.Context, redis.Cmder) error {
+			return func(ctx context.Context, cmd redis.Cmder) error {
 				fnCalled = true
 				return old(cmd)
 			}
@@ -242,18 +243,18 @@ var _ = Describe("Client", func() {
 	It("should call WrapProcess after WithContext", func() {
 		var fn1Called, fn2Called bool
 
-		client.WrapProcess(func(old func(cmd redis.Cmder) error) func(cmd redis.Cmder) error {
-			return func(cmd redis.Cmder) error {
+		client.WrapProcess(func(old func(ctx context.Context, cmd redis.Cmder) error) func(ctx context.Context, cmd redis.Cmder) error {
+			return func(ctx context.Context, cmd redis.Cmder) error {
 				fn1Called = true
-				return old(cmd)
+				return old(ctx, cmd)
 			}
 		})
 
 		client2 := client.WithContext(client.Context())
-		client2.WrapProcess(func(old func(cmd redis.Cmder) error) func(cmd redis.Cmder) error {
-			return func(cmd redis.Cmder) error {
+		client2.WrapProcess(func(old func(ctx context.Context, cmd redis.Cmder) error) func(ctx context.Context, cmd redis.Cmder) error {
+			return func(ctx context.Context, cmd redis.Cmder) error {
 				fn2Called = true
-				return old(cmd)
+				return old(ctx, cmd)
 			}
 		})
 
